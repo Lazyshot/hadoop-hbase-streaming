@@ -26,14 +26,20 @@ public class JSONTableInputFormat extends TextTableInputFormat {
     }
     
     private String formatResult(Result row, boolean includeTimestamp){
-    	Map<String, Map<String, String>> values = new HashMap<String, Map<String, String>>();
+    	Map<String, Map<String, Map<String, String>>> values = new HashMap<String, Map<String, Map<String, String>>>();
         for (KeyValue entry : row.list()) {
             Map<String, String> cell = new HashMap<String, String>();
             cell.put("value", encodeValue(entry.getValue()));
             if(includeTimestamp)
             	cell.put("timestamp", String.valueOf(entry.getTimestamp()));
-            
-            values.put(encodeColumnName(entry.getFamily(), entry.getQualifier()), cell);
+			
+            String family = new String(entry.getFamily());
+			String qualifier = new String(entry.getQualifier());
+			
+			if(!values.containsKey(family))
+				values.put(family, new HashMap<String, Map<String, String>>());
+			
+            values.get(family).put(qualifier, cell);
         }
         return JSONUtil.toJSON(values);
     }
